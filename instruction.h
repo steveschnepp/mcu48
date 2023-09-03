@@ -3,6 +3,6 @@
 
 #include "cpu.h"
 
-void execution(Cpu* cpu);
+void execution();
 
 #endif // __INSTRUCTION_H__

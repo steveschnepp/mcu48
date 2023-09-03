@@ -63,9 +63,9 @@ struct cpu {
 
 };
 
-typedef struct cpu Cpu;
+typedef struct cpu cpu_t;
 
-extern struct cpu saturn;
+extern cpu_t saturn;
 
 extern uint8_t hp48_ram[];
 extern uint8_t hp48_rom[];

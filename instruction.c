@@ -55,7 +55,7 @@ register_t addr_to_dat(word20_t addr, register_t r)
 	return r;
 }
 
-void execution(Cpu * cpu)
+void execution()
 {
 	word4_t op0 = get_op(0);
 	word4_t op1 = get_op(1);
@@ -87,9 +87,9 @@ void execution(Cpu * cpu)
 			saturn.hexmode.u = DEC;
 			break;
 		case 6:	/* RSTK=C */
+			saturn.PC.u += 2;
 			jumpaddr = dat_to_addr(saturn.C);
 			push_return_addr(jumpaddr);
-			saturn.PC.u += 2;
 			break;
 		case 7:	/* C=RSTK */
 			saturn.PC.u += 2;
@@ -97,15 +97,15 @@ void execution(Cpu * cpu)
 			saturn.C = addr_to_dat(jumpaddr, saturn.C);
 			break;
 		case 8:	/* CLRST */
-			saturn.PC += 2;
+			saturn.PC.u += 2;
 			clear_status();
 			break;
 		case 9:	/* C=ST */
-			saturn.PC += 2;
+			saturn.PC.u += 2;
 			status_to_register(saturn.C);
 			break;
 		case 0xa:	/* ST=C */
-			saturn.PC += 2;
+			saturn.PC.u += 2;
 			register_to_status(saturn.C);
 			break;
 		case 0xb:	/* CSTEX */
