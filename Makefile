@@ -1,4 +1,4 @@
-PROGRAM = hp48emu
+PROGRAM = mcu48
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
 OPTIM = g
