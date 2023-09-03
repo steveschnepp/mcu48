@@ -29,6 +29,11 @@ typedef union
     };
 } register_t;
 
+enum {
+	DEC,
+	HEX,
+};
+
 struct cpu {
     // Registers
     register_t A, B, C, D;
@@ -41,7 +46,9 @@ struct cpu {
 
     word16_t IN;
     word12_t OUT;
-    word1_t FLAG;
+    word1_t CARRY;
+
+    word4_t hexmode;
 
     word16_t ST;
     struct {
@@ -51,6 +58,8 @@ struct cpu {
         unsigned int MP : 1; // (M)odule (P)ulled
     } HST;
 
+    word20_t return_stack[9];
+    uint8_t return_stack_idx;
 
 };
 
