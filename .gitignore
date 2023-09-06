@@ -1,3 +1,7 @@
+# binary
+/mcu48
+
+# intermediate files
 *.d
 *.o
 /.vscode
