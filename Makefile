@@ -12,7 +12,7 @@ HOST_ARCH=native
 HOST_CPU=native
 CFLAGS+=-march=$(HOST_ARCH) -mtune=$(HOST_CPU)
 
-SUBDIRS :=
+SUBDIRS := roms
 TOPTARGETS := all clean
 
 all:  $(SUBDIRS) $(PROGRAM)
@@ -22,6 +22,10 @@ $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
+
+OBJS+=roms/sxrom-j.o
+
+roms/sxrom-j.o: roms/sxrom-j.c
 
 $(PROGRAM): $(OBJS)
 	$(LINK.o) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LDLIBS)
