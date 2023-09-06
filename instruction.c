@@ -18,6 +18,20 @@ static inline int calc_crc(int nib)
 	return nib;
 }
 
+int read_nibble_compressed(const unsigned char mem[], long addr_in_nibbles)
+{
+	unsigned long addr_in_bytes = addr_in_nibbles >> 2;
+	unsigned char value_byte = mem[addr_in_bytes];
+
+	unsigned char value_nibble;
+	if (addr_in_nibbles % 2)
+		value_nibble = value_byte >> 4;
+	else
+		value_nibble = value_byte & 0x0F;
+
+	return value_nibble;
+}
+
 /* from memory.c */
 int read_nibble(long addr)
 {
@@ -32,7 +46,7 @@ int read_nibble(long addr)
 	}
 
 	if (addr < 0x80000) {
-		int nibble = saturn.rom[addr];
+		int nibble = read_nibble_compressed(saturn.rom, addr);
 		printf("%x", nibble);
 		return nibble;
 	}

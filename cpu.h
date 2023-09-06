@@ -141,7 +141,7 @@ typedef struct saturn {
   short bank_switch;
   mem_cntl_t mem_cntl[NR_MCTL];
 
-  unsigned char *rom;
+  const unsigned char *rom;
   unsigned char *ram;
   unsigned char *port1;
   unsigned char *port2;
