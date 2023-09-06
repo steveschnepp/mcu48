@@ -4,4 +4,8 @@
 # intermediate files
 *.d
 *.o
+
+# local dev files
+*~
+.*.swp
 /.vscode

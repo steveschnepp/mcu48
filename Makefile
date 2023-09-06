@@ -1,4 +1,4 @@
-PROGRAM = hp48emu
+PROGRAM = mcu48
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
 OPTIM = g
@@ -15,21 +15,22 @@ CFLAGS+=-march=$(HOST_ARCH) -mtune=$(HOST_CPU)
 SUBDIRS :=
 TOPTARGETS := all clean
 
-all: $(PROGRAM)
+all:  $(SUBDIRS) $(PROGRAM)
 
 $(TOPTARGETS): $(SUBDIRS)
 
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
+
 $(PROGRAM): $(OBJS)
 	$(LINK.o) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LDLIBS)
 
 .c: *.h
 .c.o:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
-mrproper: clean $(SUBDIRS)
+mrproper: $(SUBDIRS) clean
 	rm -f $(DEPS)
 
 clean: $(SUBDIRS)
