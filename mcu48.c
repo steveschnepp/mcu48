@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "cpu.h"
 #include "instruction.h"
@@ -13,6 +14,7 @@ static unsigned char hp48_ram[32 * 1024 * 2];
 static char nibbles_trace[32];
 static int  nibbles_traced;
 void trace_nibble_rom(int nibble) {
+    assert(nibble < 0x10);
     char nibble_as_char = (nibble < 10) ? '0' + nibble : 'A' + nibble - 10;
     nibbles_trace[nibbles_traced] = nibble_as_char;
     nibbles_traced ++;
