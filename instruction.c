@@ -3057,7 +3057,7 @@ int step_instruction()
 		} else {
 			if (op2 & 0x800)
 				op2 |= jumpmasks[3];
-			jumpaddr = (op2 + saturn.PC + 1) & 0xfffff;
+			jumpaddr = (saturn.PC + 1 + op2) & 0xfffff;
 			saturn.PC = jumpaddr;
 		}
 		break;
@@ -3065,7 +3065,7 @@ int step_instruction()
 		op2 = read_nibbles(saturn.PC + 1, 3);
 		if (op2 & 0x800)
 			op2 |= jumpmasks[3];
-		jumpaddr = (op2 + saturn.PC + 4) & 0xfffff;
+		jumpaddr = (saturn.PC + 4 + op2) & 0xfffff;
 		push_return_addr(saturn.PC + 4);
 		saturn.PC = jumpaddr;
 		break;
