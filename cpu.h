@@ -150,6 +150,4 @@ typedef struct saturn {
 
 extern saturn_t saturn;
 
-extern uint8_t hp48_ram[];
-
 #endif // __CPU_H__

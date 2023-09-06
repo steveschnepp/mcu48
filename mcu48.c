@@ -7,7 +7,7 @@
 
 saturn_t saturn;
 
-unsigned char hp48_ram[32 * 1024 * 2];
+static unsigned char hp48_ram[32 * 1024 * 2];
 
 int main() {
     saturn.ram = hp48_ram;
