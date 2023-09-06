@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <assert.h>
 
 #include "cpu.h"
@@ -33,6 +32,11 @@ int read_nibble_compressed(const unsigned char mem[], long addr_in_nibbles)
 }
 
 /* from memory.c */
+__attribute__((weak))
+void trace_nibble_rom(int nibble)
+{
+}
+
 int read_nibble(long addr)
 {
 	addr &= 0xfffff;
@@ -47,7 +51,7 @@ int read_nibble(long addr)
 
 	if (addr < 0x80000) {
 		int nibble = read_nibble_compressed(saturn.rom, addr);
-		printf("%x", nibble);
+		trace_nibble_rom(nibble);
 		return nibble;
 	}
 	// PORT1/2 not supported
