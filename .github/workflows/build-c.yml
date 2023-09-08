@@ -1,0 +1,21 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: update deps
+      run: sudo apt-get -y update
+    - name: install native deps
+      run: sudo apt-get -y install srecord
+    - name: make native
+      run: make clean && make
