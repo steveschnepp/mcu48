@@ -23,9 +23,9 @@ $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 
-OBJS+=roms/sxrom-j.o
+OBJS+=roms/sxrom-a.o
 
-roms/sxrom-j.o: roms/sxrom-j.c
+roms/sxrom-a.o: roms/sxrom-a.c
 
 $(PROGRAM): $(OBJS)
 	$(LINK.o) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LDLIBS)
