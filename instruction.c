@@ -23,7 +23,7 @@ static inline int calc_crc(int nib)
 
 int read_nibble_compressed(const unsigned char mem[], long addr_in_nibbles)
 {
-	unsigned long addr_in_bytes = addr_in_nibbles >> 2;
+	unsigned long addr_in_bytes = addr_in_nibbles / 2;
 	unsigned char value_byte = mem[addr_in_bytes];
 
 	unsigned char value_nibble;
@@ -95,8 +95,8 @@ void write_nibble(long addr, int val)
 
 int read_nibbles(long addr, int nb)
 {
-	int v = read_nibble(addr);
-	for (int i = 1; i < nb; i++) {
+	int v = read_nibble(addr + nb - 1);
+	for (int i = nb - 2; i >= 0; i--) {
 		v <<= 4;
 		v |= read_nibble(addr + i);
 	}
