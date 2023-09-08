@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "cpu.h"
 #include "instruction.h"
@@ -68,6 +69,7 @@ void dump_cpu_state() {
     printf("OUT %03" PRIx64 "    HST: %d CARRY: %d PC: %05lx\n", get_register_value(saturn.OUT, sizeof(saturn.OUT)), 0, saturn.CARRY, saturn.PC);
 
     printf("\n");
+    usleep(100 * 1000);
 }
 
 int main() {
