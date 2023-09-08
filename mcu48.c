@@ -11,10 +11,11 @@ saturn_t saturn;
 
 static unsigned char hp48_ram[32 * 1024 * 2];
 
-static char nibbles_trace[32];
+static char nibbles_trace[10];
 static int  nibbles_traced;
 void trace_nibble_rom(int nibble) {
     assert(nibble < 0x10);
+    assert(nibbles_traced < sizeof(nibbles_trace)-1);
     char nibble_as_char = (nibble < 10) ? '0' + nibble : 'A' + nibble - 10;
     nibbles_trace[nibbles_traced] = nibble_as_char;
     nibbles_traced ++;
@@ -29,8 +30,21 @@ int main() {
 
         step_instruction();
 
-        printf("%05lx: %s \n", pc, nibbles_trace);
-        memset(nibbles_trace, 0, sizeof(nibbles_trace));
+        printf("%05lx: %s\n", pc, nibbles_trace);
+        memset(nibbles_trace, ' ', sizeof(nibbles_trace)-1);
         nibbles_traced = 0;
     }
+}
+
+void write_dev_mem(long addr, int val)
+{
+    printf("write_dev_mem(%lx)\n", addr);
+    assert(0);
+}
+
+int read_dev_mem(long addr)
+{
+    printf("read_dev_mem(%lx)\n", addr);
+	assert(0);
+    return 0x00;
 }

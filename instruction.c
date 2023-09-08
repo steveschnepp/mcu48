@@ -2,13 +2,17 @@
 
 #include "cpu.h"
 
+__attribute__((weak))
 void write_dev_mem(long addr, int val)
 {
+	assert(0);
 }
 
+__attribute__((weak))
 int read_dev_mem(long addr)
 {
-	return 0x00;
+	assert(0);
+	return 0;
 }
 
 static inline int calc_crc(int nib)
