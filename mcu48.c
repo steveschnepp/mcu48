@@ -87,16 +87,3 @@ int main() {
         nibbles_traced = 0;
     }
 }
-
-void write_dev_mem(long addr, int val)
-{
-    printf("write_dev_mem(%lx)\n", addr);
-    assert(0);
-}
-
-int read_dev_mem(long addr)
-{
-    printf("read_dev_mem(%lx)\n", addr);
-	assert(0);
-    return 0x00;
-}

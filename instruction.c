@@ -2,17 +2,306 @@
 
 #include "cpu.h"
 
-__attribute__((weak))
-void write_dev_mem(long addr, int val)
-{
-	assert(0);
+long nibble_masks(int p) {
+	long mask = 0xF;
+	mask <<= p*4;
+	return mask;
 }
 
-__attribute__((weak))
-int read_dev_mem(long addr)
-{
+void do_interupt(void);
+
+void write_dev_mem(long addr, int val) {
+
+  switch ((int)addr) {
+  case 0x100: /* DISPIO */
+    if (val != saturn.disp_io) {
+      saturn.disp_io = val;
+    }
+    return;
+  case 0x101: /* CONTRAST CONTROL */
+    saturn.contrast_ctrl = val;
+    return;
+  case 0x102: /* DISPLAY TEST */
+    /* Fall through */
+  case 0x103: /* DISPLAY TEST */
+    saturn.disp_test &= ~nibble_masks(addr - 0x102);
+    saturn.disp_test |= val << ((addr - 0x102) * 4);
+    return;
+  case 0x104:
+  case 0x105:
+  case 0x106:
+  case 0x107: /* CRC */
+    saturn.crc &= ~nibble_masks(addr - 0x104);
+    saturn.crc |= val << ((addr - 0x104) * 4);
+    return;
+  case 0x108: /* POWER STATUS */
+    saturn.power_status = val;
+    return;
+  case 0x109: /* POWER CONTROL */
+    saturn.power_ctrl = val;
+    return;
+  case 0x10a: /* MODE */
+    saturn.mode = val;
+    return;
+  case 0x10b:
+  case 0x10c: /* ANNUNC */
+    saturn.annunc &= ~nibble_masks(addr - 0x10b);
+    saturn.annunc |= val << ((addr - 0x10b) * 4);
+    return;
+  case 0x10d: /* BAUD */
+    saturn.baud = val;
+    return;
+  case 0x10e: /* CARD CONTROL */
+    saturn.card_ctrl = val;
+    if (saturn.card_ctrl & 0x02)
+      saturn.MP = 1;
+    if (saturn.card_ctrl & 0x01)
+      do_interupt();
+    return;
+  case 0x10f: /* CARD STATUS */
+    return;
+  case 0x110: /* IO CONTROL */
+    saturn.io_ctrl = val;
+    return;
+  case 0x111: /* RCS */
+    saturn.rcs = val;
+    return;
+  case 0x112: /* TCS */
+    saturn.tcs = val;
+    return;
+  case 0x113: /* CRER */
+    saturn.rcs &= 0x0b;
+    return;
+  case 0x114:
+  case 0x115: /* RBR */
+    return;
+  case 0x116:
+  case 0x117: /* TBR */
+    saturn.tbr &= ~nibble_masks(addr - 0x116);
+    saturn.tbr |= val << ((addr - 0x116) * 4);
+    saturn.tcs |= 0x01;
+    return;
+  case 0x118:
+  case 0x119: /* SERVICE REQ */
+    saturn.sreq &= ~nibble_masks(addr - 0x118);
+    saturn.sreq |= val << ((addr - 0x118) * 4);
+    return;
+  case 0x11a: /* IR CONTROL */
+    saturn.ir_ctrl = val;
+    return;
+  case 0x11b: /* BASE NIB OFFSET */
+    saturn.base_off = val;
+    return;
+  case 0x11c: /* LED CONTROL */
+    saturn.lcr = val;
+    return;
+  case 0x11d: /* LED BUFFER */
+    saturn.lbr = val;
+    return;
+  case 0x11e: /* SCRATCH PAD */
+    saturn.scratch = val;
+    return;
+  case 0x11f: /* BASENIBBLE */
+    saturn.base_nibble = val;
+    return;
+  case 0x120:
+  case 0x121:
+  case 0x122:
+  case 0x123: /* DISP_ADDR */
+  case 0x124:
+    saturn.disp_addr &= ~nibble_masks(addr - 0x120);
+    saturn.disp_addr |= val << ((addr - 0x120) * 4);
+    return;
+  case 0x125:
+  case 0x126:
+  case 0x127: /* LINE_OFFSET */
+    saturn.line_offset &= ~nibble_masks(addr - 0x125);
+    saturn.line_offset |= val << ((addr - 0x125) * 4);
+    return;
+  case 0x128:
+  case 0x129: /* LINE_COUNT */
+    saturn.line_count &= ~nibble_masks(addr - 0x128);
+    saturn.line_count |= val << ((addr - 0x128) * 4);
+    return;
+  case 0x12a:
+  case 0x12b:
+  case 0x12c:
+  case 0x12d: /* Dont know yet */
+    saturn.unknown &= ~nibble_masks(addr - 0x12a);
+    saturn.unknown |= val << ((addr - 0x12a) * 4);
+    return;
+  case 0x12e: /* TIMER 1 CONTROL */
+    saturn.t1_ctrl = val;
+    return;
+  case 0x12f: /* TIMER 2 CONTROL */
+    saturn.t2_ctrl = val;
+    return;
+  case 0x130:
+  case 0x131:
+  case 0x132:
+  case 0x133: /* MENU_ADDR */
+  case 0x134:
+    saturn.menu_addr &= ~nibble_masks(addr - 0x130);
+    saturn.menu_addr |= val << ((addr - 0x130) * 4);
+    return;
+  case 0x135:
+  case 0x136: /* Dont know yet 2 */
+    saturn.unknown2 &= ~nibble_masks(addr - 0x135);
+    saturn.unknown2 |= val << ((addr - 0x135) * 4);
+    return;
+  case 0x137: /* TIMER1 */
+    saturn.timer1 = val;
+    return;
+  case 0x138:
+  case 0x139:
+  case 0x13a:
+  case 0x13b:
+  case 0x13c:
+  case 0x13d:
+  case 0x13e:
+  case 0x13f: /* TIMER2 */
+    saturn.timer2 &= ~nibble_masks(addr - 0x138);
+    saturn.timer2 |= val << ((addr - 0x138) * 4);
+    return;
+  default:
 	assert(0);
-	return 0;
+    return;
+  }
+}
+
+int read_dev_mem(long addr) {
+  switch ((int)addr) {
+  case 0x100: /* DISPLAY IO */
+    return saturn.disp_io & 0x0f;
+  case 0x101: /* CONTRAST CONTROL */
+    return saturn.contrast_ctrl & 0x0f;
+  case 0x102:
+  case 0x103: /* DISPLAY TEST */
+    return (saturn.disp_test >> ((addr - 0x102) * 4)) & 0x0f;
+  case 0x104:
+  case 0x105:
+  case 0x106:
+  case 0x107: /* CRC */
+    return (saturn.crc >> ((addr - 0x104) * 4)) & 0x0f;
+  case 0x108: /* POWER STATUS */
+    return saturn.power_status & 0x0f;
+  case 0x109: /* POWER CONTROL */
+    return saturn.power_ctrl & 0x0f;
+  case 0x10a: /* MODE */
+    return saturn.mode & 0x0f;
+  case 0x10b:
+  case 0x10c: /* ANNUNC */
+    return (saturn.annunc >> ((addr - 0x10b) * 4)) & 0x0f;
+  case 0x10d: /* BAUD */
+#ifdef DEBUG_SERIALb
+    fprintf(stderr, "%.5lx: BAUD read: %x\n", saturn.PC, saturn.baud);
+#endif
+    return saturn.baud & 0x0f;
+  case 0x10e: /* CARD CONTROL */
+    return saturn.card_ctrl & 0x0f;
+  case 0x10f: /* CARD STATUS */
+    return saturn.card_status & 0x0f;
+  case 0x110: /* IO CONTROL */
+#ifdef DEBUG_SERIAL
+    fprintf(stderr, "%.5lx: IOC read: %x\n", saturn.PC, saturn.io_ctrl);
+#endif
+    return saturn.io_ctrl & 0x0f;
+  case 0x111: /* RCS */
+#ifdef DEBUG_SERIAL
+    fprintf(stderr, "%.5lx: RCS read: %x\n", saturn.PC, saturn.rcs);
+#endif
+    return saturn.rcs & 0x0f;
+  case 0x112: /* TCS */
+#ifdef DEBUG_SERIAL
+    fprintf(stderr, "%.5lx: TCS read: %x\n", saturn.PC, saturn.tcs);
+#endif
+    return saturn.tcs & 0x0f;
+  case 0x113: /* CRER */
+    return 0x00;
+  case 0x114:
+  case 0x115: /* RBR */
+    saturn.rcs &= 0x0e;
+    return (saturn.rbr >> ((addr - 0x114) * 4)) & 0x0f;
+  case 0x116:
+  case 0x117: /* TBR */
+    return 0x00;
+  case 0x118:
+  case 0x119: /* SERVICE REQ */
+#ifdef DEBUG_SERIAL
+    fprintf(stderr, "%.5lx: SREQ? read: %x\n", saturn.PC, saturn.sreq);
+#endif
+    return (saturn.sreq >> ((addr - 0x118) * 4)) & 0x0f;
+  case 0x11a: /* IR CONTROL */
+#ifdef DEBUG_IR
+    fprintf(stderr, "%.5lx: IRC read: %x\n", saturn.PC, saturn.ir_ctrl);
+#endif
+    return saturn.ir_ctrl & 0x0f;
+  case 0x11b: /* BASE NIB OFFSET */
+    return saturn.base_off & 0x0f;
+  case 0x11c: /* LED CONTROL */
+#if 0
+#ifdef DEBUG_IR
+      fprintf(stderr, "%.5lx: LCR read: %x\n", saturn.PC, saturn.lcr);
+#endif
+#endif
+    return saturn.lcr & 0x0f;
+  case 0x11d: /* LED BUFFER */
+#if 0
+#ifdef DEBUG_IR
+      fprintf(stderr, "%.5lx: LBR read: %x\n", saturn.PC, saturn.lbr);
+#endif
+#endif
+    return saturn.lbr & 0x0f;
+  case 0x11e: /* SCRATCH PAD */
+    return saturn.scratch & 0x0f;
+  case 0x11f: /* BASENIBBLE */
+    return saturn.base_nibble & 0x0f;
+  case 0x120:
+  case 0x121:
+  case 0x122:
+  case 0x123: /* DISP_ADDR */
+  case 0x124:
+    return (saturn.disp_addr >> ((addr - 0x120) * 4)) & 0x0f;
+  case 0x125:
+  case 0x126:
+  case 0x127: /* LINE_OFFSET */
+    return (saturn.line_offset >> ((addr - 0x125) * 4)) & 0x0f;
+  case 0x128:
+  case 0x129: /* LINE_COUNT */
+    return saturn.line_count & 0xc0;
+  case 0x12a:
+  case 0x12b:
+  case 0x12c:
+  case 0x12d: /* Dont know yet */
+    return (saturn.unknown >> ((addr - 0x12a) * 4)) & 0x0f;
+  case 0x12e: /* TIMER 1 CONTROL */
+    return saturn.t1_ctrl & 0x0f;
+  case 0x12f: /* TIMER 2 CONTROL */
+    return saturn.t2_ctrl & 0x0f;
+  case 0x130:
+  case 0x131:
+  case 0x132:
+  case 0x133: /* MENU_ADDR */
+  case 0x134:
+    return (saturn.menu_addr >> ((addr - 0x130) * 4)) & 0x0f;
+  case 0x135:
+  case 0x136: /* Dont know yet 2 */
+    return (saturn.unknown2 >> ((addr - 0x135) * 4)) & 0x0f;
+  case 0x137:
+    return saturn.timer1 & 0xf;
+  case 0x138:
+  case 0x139:
+  case 0x13a:
+  case 0x13b:
+  case 0x13c:
+  case 0x13d:
+  case 0x13e:
+  case 0x13f:
+    return (saturn.timer2 >> ((addr - 0x138) * 4)) & 0xf;
+  default:
+	assert(0);
+    return 0x00;
+  }
 }
 
 static inline int calc_crc(int nib)
@@ -310,13 +599,6 @@ void load_constant(unsigned char *reg, int n, long addr)
 	}
 }
 
-static long nibble_masks[16] = {
-	0x0000000f, 0x000000f0, 0x00000f00, 0x0000f000,
-	0x000f0000, 0x00f00000, 0x0f000000, 0xf0000000,
-	0x0000000f, 0x000000f0, 0x00000f00, 0x0000f000,
-	0x000f0000, 0x00f00000, 0x0f000000, 0xf0000000
-};
-
 static int start_fields[] = {
 	-1, 0, 2, 0, 15, 3, 0, 0, -1, 0,
 	2, 0, 15, 3, 0, 0, 0, 0, 0
@@ -352,7 +634,7 @@ void load_addr(word_20 * dat, long addr, int n)
 	int i;
 
 	for (i = 0; i < n; i++) {
-		*dat &= ~nibble_masks[i];
+		*dat &= ~nibble_masks(i);
 		*dat |= read_nibble(addr + i) << (i * 4);
 	}
 }
@@ -375,7 +657,7 @@ void register_to_address(unsigned char *reg, word_20 * dat, int s)
 	else
 		n = 5;
 	for (i = 0; i < n; i++) {
-		*dat &= ~nibble_masks[i];
+		*dat &= ~nibble_masks(i);
 		*dat |= (reg[i] & 0x0f) << (i * 4);
 	}
 }
@@ -737,7 +1019,7 @@ void exchange_reg(unsigned char *r, word_20 * d, int code)
 	for (i = s; i <= e; i++) {
 		t = r[i];
 		r[i] = (*d >> (i * 4)) & 0x0f;
-		*d &= ~nibble_masks[i];
+		*d &= ~nibble_masks(i);
 		*d |= t << (i * 4);
 	}
 }
