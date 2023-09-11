@@ -1,4 +1,4 @@
-#include <assert.h>
+#define assert(x) do { int *bad = 0; if (!x) *bad = 1; } while (0)
 
 #include "cpu.h"
 
