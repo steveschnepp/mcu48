@@ -19,7 +19,7 @@ char ntoa(int nibble) {
     return nibble_as_char;
 }
 
-static char nibbles_trace[10];
+static char nibbles_trace[32];
 static int  nibbles_traced;
 void trace_nibble_rom(int nibble) {
     assert(nibble < 0x10);
@@ -72,9 +72,19 @@ void dump_cpu_state() {
     usleep(100 * 1000);
 }
 
-int main() {
+#include <stdio.h>
+
+int main(int argc, char* argv[]) {
     saturn.ram = hp48_ram;
     saturn.rom = hp48_rom;
+
+    if (argc > 1) {
+        unsigned char *rom = malloc(512 * 1024);
+        FILE* f = fopen(argv[1], "r");
+        fread(rom, 1, 512 * 1024, f);
+        fclose(f);
+        saturn.rom = rom;
+    }
 
     while(1) {
         word_20 pc = saturn.PC;
