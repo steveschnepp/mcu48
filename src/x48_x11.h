@@ -63,13 +63,6 @@
 
 #include "global.h"
 
-#include <X11/Xlib.h>
-#ifdef HAVE_XSHM
-#include <X11/extensions/XShm.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#endif
-
 #define WHITE 0
 #define LEFT 1
 #define RIGHT 2
@@ -96,7 +89,6 @@ typedef struct color_t {
   int r, g, b;
   int mono_rgb;
   int gray_rgb;
-  XColor xcolor;
 } color_t;
 
 extern color_t *colors;
@@ -108,27 +100,13 @@ extern color_t *colors;
 
 typedef struct disp_t {
   unsigned int w, h;
-  Window win;
-  GC gc;
   short mapped;
   int offset;
   int lines;
-#ifdef HAVE_XSHM
-  int display_update;
-  XShmSegmentInfo disp_info;
-  XImage *disp_image;
-  XShmSegmentInfo menu_info;
-  XImage *menu_image;
-#endif
 } disp_t;
 
 extern disp_t disp;
 
-#ifdef HAVE_XSHM
-extern int shm_flag;
-#endif
-
-extern Display *dpy;
 extern int screen;
 
 extern int InitDisplay __ProtoType__((int argc, char **argv));

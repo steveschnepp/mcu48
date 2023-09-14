@@ -68,9 +68,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#if defined(HPUX) || defined(CSRG_BASED)
-#include <sys/ioctl.h>
-#endif
 #include <termios.h>
 #include <unistd.h>
 
@@ -115,36 +112,6 @@ int serial_init(void) {
   wire_fd = -1;
   ttyp = -1;
   if (useTerminal) {
-#if defined(IRIX)
-    if ((p = _getpty(&wire_fd, O_RDWR | O_EXCL | O_NDELAY, 0666, 0)) == NULL) {
-      wire_fd = -1;
-      ttyp = -1;
-    } else {
-      if ((ttyp = open(p, O_RDWR | O_NDELAY, 0666)) < 0) {
-        close(wire_fd);
-        wire_fd = -1;
-        ttyp = -1;
-      } else {
-        if (verbose)
-          printf("%s: wire connection on %s\n", progname, p);
-        wire_name = strdup(p);
-      }
-    }
-#elif defined(SOLARIS)
-    if ((wire_fd = open("/dev/ptmx", O_RDWR | O_NONBLOCK, 0666)) >= 0) {
-      grantpt(wire_fd);
-      unlockpt(wire_fd);
-      p = ptsname(wire_fd);
-      strcpy(tty_dev_name, p);
-      if ((ttyp = open(tty_dev_name, O_RDWR | O_NDELAY, 0666)) >= 0) {
-        ioctl(ttyp, I_PUSH, "ptem");
-        ioctl(ttyp, I_PUSH, "ldterm");
-        if (verbose)
-          printf("%s: wire connection on %s\n", progname, tty_dev_name);
-        wire_name = strdup(tty_dev_name);
-      }
-    }
-#elif defined(LINUX)
     /* Unix98 PTY (Preferred) */
     if ((wire_fd = open("/dev/ptmx", O_RDWR | O_NONBLOCK, 0666)) >= 0) {
       grantpt(wire_fd);
@@ -178,31 +145,6 @@ int serial_init(void) {
         c++;
       } while ((wire_fd < 0) && (errno != ENOENT));
     }
-#else
-    /*
-     * Here we go for SUNOS, HPUX
-     */
-    c = 'p';
-    do {
-      for (n = 0; n < 16; n++) {
-        sprintf(tty_dev_name, "/dev/ptyp%x", n);
-        if ((wire_fd = open(tty_dev_name, O_RDWR | O_EXCL | O_NDELAY, 0666)) >=
-            0) {
-          sprintf(tty_dev_name, "/dev/tty%c%x", c, n);
-          if ((ttyp = open(tty_dev_name, O_RDWR | O_NDELAY, 0666)) < 0) {
-            wire_fd = -1;
-            ttyp = -1;
-          } else {
-            if (verbose)
-              printf("%s: wire connection on %s\n", progname, tty_dev_name);
-            wire_name = strdup(tty_dev_name);
-            break;
-          }
-        }
-      }
-      c++;
-    } while ((wire_fd < 0) && (errno != ENOENT));
-#endif
   }
 
   if (ttyp >= 0) {
@@ -313,49 +255,6 @@ void serial_baud(int baud) {
     }
   }
 
-#if defined(__APPLE__)
-  baud &= 0x7;
-  switch (baud) {
-  case 0: /* 1200 */
-    ttybuf.c_cflag |= B1200;
-    break;
-  case 1: /* 1920 */
-#ifdef B1920
-    ttybuf.c_cflag |= B1920;
-#endif
-    break;
-  case 2: /* 2400 */
-    ttybuf.c_cflag |= B2400;
-    break;
-  case 3: /* 3840 */
-#ifdef B3840
-    ttybuf.c_cflag |= B3840;
-#endif
-    break;
-  case 4: /* 4800 */
-    ttybuf.c_cflag |= B4800;
-    break;
-  case 5: /* 7680 */
-#ifdef B7680
-    ttybuf.c_cflag |= B7680;
-#endif
-    break;
-  case 6: /* 9600 */
-    ttybuf.c_cflag |= B9600;
-    break;
-  case 7: /* 15360 */
-#ifdef B15360
-    ttybuf.c_cflag |= B15360;
-#endif
-    break;
-  }
-
-  if ((ir_fd >= 0) && ((ttybuf.c_ospeed) == 0)) {
-    if (!quiet)
-      fprintf(stderr, "%s: can\'t set baud rate, using 9600\n", progname);
-    ttybuf.c_cflag |= B9600;
-  }
-#else
   ttybuf.c_cflag &= ~CBAUD;
 
   baud &= 0x7;
@@ -399,7 +298,6 @@ void serial_baud(int baud) {
       fprintf(stderr, "%s: can\'t set baud rate, using 9600\n", progname);
     ttybuf.c_cflag |= B9600;
   }
-#endif
   if (ir_fd >= 0) {
 #if defined(TCSANOW)
     if (tcsetattr(ir_fd, TCSANOW, &ttybuf) < 0)
@@ -431,8 +329,6 @@ void serial_baud(int baud) {
     }
   }
 
-#if defined(__APPLE__)
-#else
   ttybuf.c_cflag &= ~CBAUD;
 
   baud &= 0x7;
@@ -476,7 +372,6 @@ void serial_baud(int baud) {
       fprintf(stderr, "%s: can\'t set baud rate, using 9600\n", progname);
     ttybuf.c_cflag |= B9600;
   }
-#endif
   if (ttyp >= 0) {
 #if defined(TCSANOW)
     if (tcsetattr(ttyp, TCSANOW, &ttybuf) < 0)

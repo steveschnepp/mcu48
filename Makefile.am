@@ -13,5 +13,7 @@ X48 : src/X48.ad
 
 appdefault_DATA = X48
 
+appdefaultdir = $(datadir)/X11/app-defaults
+
 DISTCHECK_CONFIGURE_FLAGS = --with-appdefaultdir='$${datadir}/X11/app-defaults'
 

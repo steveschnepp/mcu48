@@ -61,7 +61,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
 
 #include "debugger.h"
 #include "device.h"
@@ -551,7 +550,6 @@ static void do_delete(int argc, char **argv) {
 static void do_exit(int argc, char **argv) {
   if (confirm("Exit the emulator WITHOUT saving its state?")) {
     printf("Exit.\n");
-    XCloseDisplay(dpy);
     exit(0);
   }
 }
@@ -644,7 +642,6 @@ static void do_quit(int argc, char **argv) {
   if (confirm("Quit the emulator and save its state?")) {
     printf("Exit.\n");
     exit_emulator();
-    XCloseDisplay(dpy);
     exit(0);
   }
 }
@@ -981,55 +978,6 @@ struct se {
   word_20 se_p;
   struct se *se_next;
 };
-
-char *get_stack(void) {
-  word_20 dsktop, dskbot;
-  word_20 sp = 0, end = 0, ent = 0;
-  word_20 ram_base, ram_mask;
-  char dat[65536];
-  char typ[256];
-  int i, n;
-
-  ram_base = saturn.mem_cntl[1].config[0];
-  ram_mask = saturn.mem_cntl[1].config[1];
-  if (opt_gx) {
-    saturn.mem_cntl[1].config[0] = 0x80000;
-    saturn.mem_cntl[1].config[1] = 0xc0000;
-    dsktop = DSKTOP_GX;
-    dskbot = DSKBOT_GX;
-  } else {
-    saturn.mem_cntl[1].config[0] = 0x70000;
-    saturn.mem_cntl[1].config[1] = 0xf0000;
-    dsktop = DSKTOP_SX;
-    dskbot = DSKBOT_SX;
-  }
-
-  load_addr(&sp, dsktop, 5);
-  load_addr(&end, dskbot, 5);
-
-  n = (end - sp) / 5 - 1; /* end never matches sp */
-
-  printf("n = %d\n", n);
-
-  // TODO Get the top of the stack in the buffer.
-  // TODO create a window and put the complete stack into it!
-  if (n) {
-    load_addr(&ent, sp, 5);
-    decode_rpl_obj_2(ent, typ, dat);
-    printf("%d %p -> [%s] %s\n", i, ent, typ, dat);
-  }
-
-  for (i = 0; i < n; i++) {
-    load_addr(&ent, sp + (5 * i), 5);
-    decode_rpl_obj_2(ent, typ, dat);
-    printf("%d %p -> [%s] %s\n", i, ent, typ, dat);
-  }
-
-  saturn.mem_cntl[1].config[0] = ram_base;
-  saturn.mem_cntl[1].config[1] = ram_mask;
-
-  return;
-}
 
 static void do_stack(int argc, char **argv) {
   word_20 dsktop, dskbot;

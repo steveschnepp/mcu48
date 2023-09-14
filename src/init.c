@@ -1061,28 +1061,7 @@ void get_home_directory(char *path) {
   char *p;
   struct passwd *pwd;
 
-  if (homeDirectory[0] == '/') {
-    strcpy(path, homeDirectory);
-  } else {
-    p = getenv("HOME");
-    if (p) {
-      strcpy(path, p);
-      strcat(path, "/");
-    } else {
-      pwd = getpwuid(getuid());
-      if (pwd) {
-        strcpy(path, pwd->pw_dir);
-        strcat(path, "/");
-      } else {
-        if (!quiet)
-          fprintf(stderr,
-                  "%s: can\'t figure out your home directory, trying /tmp\n",
-                  progname);
-        strcpy(path, "/tmp");
-      }
-    }
-    strcat(path, homeDirectory);
-  }
+  strcpy(path, "./");
 }
 
 int read_files(void) {
@@ -1104,6 +1083,8 @@ int read_files(void) {
     return 0;
 
   rom_is_new = 0;
+
+#if 0 // no state
 
   strcpy(fnam, path);
   strcat(fnam, "hp48");
@@ -1138,7 +1119,8 @@ int read_files(void) {
       saturn.i_per_s = 0;
       saturn.version[0] = VERSION_MAJOR;
       saturn.version[1] = VERSION_MINOR;
-      saturn.version[2] = PATCHLEVEL;
+      saturn.version[2] = PATCHLEVEL;up
+
       saturn.version[3] = COMPILE_VERSION;
     } else {
       /*
@@ -1222,6 +1204,7 @@ int read_files(void) {
     }
   }
   fclose(fp);
+#endif
 
   dev_memory_init();
 
@@ -1620,8 +1603,6 @@ int init_emulator(void) {
     }
 
   init_saturn();
-  if (!read_rom(romFileName))
-    exit(1);
 
   return 0;
 }
