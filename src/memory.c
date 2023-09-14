@@ -105,10 +105,6 @@ long nibble_masks[16] = {0x0000000f, 0x000000f0, 0x00000f00, 0x0000f000,
                          0x0000000f, 0x000000f0, 0x00000f00, 0x0000f000,
                          0x000f0000, 0x00f00000, 0x0f000000, 0xf0000000};
 
-void(*write_nibble) __ProtoType__((long addr, int val));
-int(*read_nibble) __ProtoType__((long addr));
-int(*read_nibble_crc) __ProtoType__((long addr));
-
 static int line_counter = -1;
 
 static inline int calc_crc(int nib) {
@@ -1404,15 +1400,21 @@ void write_nibbles(long addr, long val, int len) {
   }
 }
 
+void write_nibble(long addr, int val) {
+  if (opt_gx) return write_nibble_gx(addr, val);
+  return write_nibble_sx(addr, val);
+}
+
+int read_nibble(long addr) {
+  if (opt_gx) return read_nibble_gx(addr);
+  return read_nibble_sx(addr);
+}
+
+int read_nibble_crc(long addr) {
+  if (opt_gx) return read_nibble_crc_gx(addr);
+  return read_nibble_crc_sx(addr);
+}
+
 void dev_memory_init(void) {
-  if (opt_gx) {
-    read_nibble = read_nibble_gx;
-    read_nibble_crc = read_nibble_crc_gx;
-    write_nibble = write_nibble_gx;
-  } else {
-    read_nibble = read_nibble_sx;
-    read_nibble_crc = read_nibble_crc_sx;
-    write_nibble = write_nibble_sx;
-  }
   memset(&device, 0, sizeof(device));
 }

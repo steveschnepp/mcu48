@@ -277,9 +277,9 @@ extern void receive_char __ProtoType__((void));
 extern void do_kbd_int __ProtoType__((void));
 extern void do_interupt __ProtoType__((void));
 
-extern void(*write_nibble) __ProtoType__((long addr, int val));
-extern int(*read_nibble) __ProtoType__((long addr));
-extern int(*read_nibble_crc) __ProtoType__((long addr));
+extern void write_nibble __ProtoType__((long addr, int val));
+extern int read_nibble __ProtoType__((long addr));
+extern int read_nibble_crc __ProtoType__((long addr));
 
 extern int emulate __ProtoType__((void));
 extern int step_instruction __ProtoType__((void));
