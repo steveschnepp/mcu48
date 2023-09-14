@@ -58,11 +58,9 @@
 
 extern int throttle;
 
-#if 0
 #define DEBUG_TIMER
 #define DEBUG_SCHED 1
 #define DEBUG_DISP_SCHED
-#endif
 
 static long jumpaddr;
 
@@ -2421,10 +2419,6 @@ inline void schedule(void) {
 
   if (got_alarm) {
     got_alarm = 0;
-#ifdef HAVE_XSHM
-    if (disp.display_update)
-      refresh_display();
-#endif
     GetEvent();
   }
 }

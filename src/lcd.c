@@ -181,11 +181,6 @@ void update_display(void) {
   long addr;
   static int old_offset = -1;
   static int old_lines = -1;
-#ifdef HAVE_XSHM
-  int addr_pad;
-  int val, line_pad, line_length;
-  word_20 data_addr, data_addr_2;
-#endif
 
   if (!disp.mapped) {
     refresh_icon();
@@ -244,75 +239,31 @@ void disp_draw_nibble(word_20 addr, word_4 val) {
     y = offset / display.nibs_per_line;
     if (y < 0 || y > 63)
       return;
-#ifdef HAVE_XSHM
-    if (shm_flag) {
-      shm_addr = (2 * y * disp.disp_image->bytes_per_line) + x;
-      disp.disp_image->data[shm_addr] = nibble_bits[val];
-      disp.disp_image->data[shm_addr + disp.disp_image->bytes_per_line] =
-          nibble_bits[val];
-      disp.display_update |= UPDATE_DISP;
-    } else {
-#endif
       if (val != disp_buf[y][x]) {
         disp_buf[y][x] = val;
         draw_nibble(x, y, val);
       }
-#ifdef HAVE_XSHM
-    }
-#endif
   } else {
-#ifdef HAVE_XSHM
-    if (shm_flag) {
-      shm_addr = x;
-      for (y = 0; y < display.lines; y++) {
-        disp.disp_image->data[shm_addr] = nibble_bits[val];
-        shm_addr += disp.disp_image->bytes_per_line;
-        disp.disp_image->data[shm_addr] = nibble_bits[val];
-        shm_addr += disp.disp_image->bytes_per_line;
-      }
-      disp.display_update |= UPDATE_DISP;
-    } else {
-#endif
       for (y = 0; y < display.lines; y++) {
         if (val != disp_buf[y][x]) {
           disp_buf[y][x] = val;
           draw_nibble(x, y, val);
         }
       }
-#ifdef HAVE_XSHM
-    }
-#endif
   }
 }
 
 void menu_draw_nibble(word_20 addr, word_4 val) {
   long offset;
-#ifdef HAVE_XSHM
-  int shm_addr;
-#endif
   int x, y;
 
   offset = (addr - display.menu_start);
-#ifdef HAVE_XSHM
-  if (shm_flag) {
-    shm_addr =
-        2 * (offset / NIBBLES_PER_ROW) * disp.menu_image->bytes_per_line +
-        (offset % NIBBLES_PER_ROW);
-    disp.menu_image->data[shm_addr] = nibble_bits[val];
-    disp.menu_image->data[shm_addr + disp.menu_image->bytes_per_line] =
-        nibble_bits[val];
-    disp.display_update |= UPDATE_MENU;
-  } else {
-#endif
     x = offset % NIBBLES_PER_ROW;
     y = display.lines + (offset / NIBBLES_PER_ROW) + 1;
     if (val != disp_buf[y][x]) {
       disp_buf[y][x] = val;
       draw_nibble(x, y, val);
     }
-#ifdef HAVE_XSHM
-  }
-#endif
 }
 
 struct ann_struct {

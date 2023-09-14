@@ -599,10 +599,6 @@ static void do_load(int argc, char **argv) {
       }
       init_display();
       update_display();
-#ifdef HAVE_XSHM
-      if (disp.display_update)
-        refresh_display();
-#endif
     } else {
       printf("Loading emulator-state from files failed.\n");
       if (saturn.rom) {
@@ -1184,10 +1180,6 @@ int debug(void) {
   if (device.display_touched) {
     device.display_touched = 0;
     update_display();
-#ifdef HAVE_XSHM
-    if (disp.display_update)
-      refresh_display();
-#endif
   }
 
   /*

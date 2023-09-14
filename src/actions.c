@@ -100,7 +100,6 @@ int conf_bank1 = 0x00000;
 int conf_bank2 = 0x00000;
 
 void yield() {
-
 #if 0
   pause();
 #else
@@ -409,10 +408,6 @@ void do_shutdown(void) {
   if (device.display_touched) {
     device.display_touched = 0;
     update_display();
-#ifdef HAVE_XSHM
-    if (disp.display_update)
-      refresh_display();
-#endif
   }
 
   stop_timer(RUN_TIMER);
@@ -445,11 +440,6 @@ void do_shutdown(void) {
 
     if (got_alarm) {
       got_alarm = 0;
-
-#ifdef HAVE_XSHM
-      if (disp.display_update)
-        refresh_display();
-#endif
 
       ticks = get_t1_t2();
       if (saturn.t2_ctrl & 0x01) {

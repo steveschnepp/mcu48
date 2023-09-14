@@ -120,8 +120,4 @@ extern void ShowConnections __ProtoType__((char *w, char *i));
 
 extern void exit_x48 __ProtoType__((int tell_x11));
 
-#ifdef HAVE_XSHM
-extern void refresh_display __ProtoType__((void));
-#endif
-
 #endif /* !_X48_X11_H */

@@ -66,11 +66,9 @@
 #include "global.h"
 
 #include <sys/time.h>
+#include <stdint.h>
 
 #include "mmu.h"
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#endif
 
 #define RAM_SIZE_SX 0x10000
 #define RAM_SIZE_GX 0x40000
