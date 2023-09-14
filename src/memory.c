@@ -90,15 +90,15 @@ extern short port2_is_ram;
 extern long port2_mask;
 
 #define DEBUG_UNKNOWN 1
-/* #define DEBUG_SERIAL 1 */
-/* #define DEBUG_SERIALb 1 */
-/* #define DEBUG_DISPLAY 1 */
-/* #define DEBUG_IR 1 */
-/* #define DEBUG_CONTRAST 1 */
-/* #define DEBUG_CARDS 1 */
-/* #define DEBUG_BAD_MEM 1 */
-/* #define DEBUG_BASE_NIBBLE 1 */
-/* #define DEBUG_BANK_SWITCH 1 */
+#define DEBUG_SERIAL 1
+#define DEBUG_SERIALb 1
+#define DEBUG_DISPLAY 1
+#define DEBUG_IR 1
+#define DEBUG_CONTRAST 1
+#define DEBUG_CARDS 1
+#define DEBUG_BAD_MEM 1
+#define DEBUG_BASE_NIBBLE 1
+#define DEBUG_BANK_SWITCH 1
 
 long nibble_masks[16] = {0x0000000f, 0x000000f0, 0x00000f00, 0x0000f000,
                          0x000f0000, 0x00f00000, 0x0f000000, 0xf0000000,

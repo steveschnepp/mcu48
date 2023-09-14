@@ -71,11 +71,11 @@
  * $Id: actions.c,v 1.15 1995/01/11 18:20:01 ecd Exp ecd $
  */
 
-/* #define DEBUG_INTERRUPT 1 */
-/* #define DEBUG_KBD_INT 1 */
-/* #define DEBUG_SHUTDOWN 1 */
-/* #define DEBUG_CONFIG 1 */
-/* #define DEBUG_ID 1 */
+#define DEBUG_INTERRUPT 1
+#define DEBUG_KBD_INT 1
+#define DEBUG_SHUTDOWN 1
+#define DEBUG_CONFIG 1
+#define DEBUG_ID 1
 
 #include "global.h"
 
