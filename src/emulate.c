@@ -121,12 +121,13 @@ void trace_instr(char instr[]) {
 char nibble_to_hex(char nibble) {
   assert(nibble < 0x10);
   if (nibble < 0xA) return '0' + nibble;
-  return 'A' + nibble;
+  return 'A' + nibble - 0xA;
 }
 
 char current_opcode[32] = { 0 };
-void trace_readrom(char nibble) {
-  current_opcode[strlen(current_opcode)] = nibble_to_hex(nibble);
+void trace_rom_read(char nibble) {
+  int current_opcode_idx = strlen(current_opcode);
+  current_opcode[current_opcode_idx] = nibble_to_hex(nibble);
 }
 
 int decode_group_80(void) {
@@ -172,7 +173,7 @@ int decode_group_80(void) {
     return get_identification();
   case 7: trace_instr("SHUTDN"); /* SHUTDN */
     saturn.PC += 3;
-    do_shutdown();
+    saturn.shutdown = 1;
     return 0;
   case 8:
     op4 = read_nibble(saturn.PC + 3);
@@ -1026,12 +1027,12 @@ static inline int decode_8_thru_f(int op1) {
       default:
         return 1;
       }
-    case 2:
+    case 2: trace_instr("CLRHST");
       op3 = read_nibble(saturn.PC + 2);
       saturn.PC += 3;
       clear_hardware_stat(op3);
       return 0;
-    case 3:
+    case 3: trace_instr("?MP/SB/SR/XM=0");
       op3 = read_nibble(saturn.PC + 2);
       saturn.CARRY = is_zero_hardware_stat(op3);
       if (saturn.CARRY) {
@@ -1052,10 +1053,10 @@ static inline int decode_8_thru_f(int op1) {
     case 4:
     case 5:
       op3 = read_nibble(saturn.PC + 2);
-      if (op2 == 4) {
+      if (op2 == 4) { trace_instr("ST=0   n");
         saturn.PC += 3;
         clear_program_stat(op3);
-      } else {
+      } else { trace_instr("ST=1   n");
         saturn.PC += 3;
         set_program_stat(op3);
       }
@@ -1063,10 +1064,13 @@ static inline int decode_8_thru_f(int op1) {
     case 6:
     case 7:
       op3 = read_nibble(saturn.PC + 2);
-      if (op2 == 6)
+      if (op2 == 6) {
+        trace_instr("?ST#1   n");
         saturn.CARRY = (get_program_stat(op3) == 0) ? 1 : 0;
-      else
+      } else {
+        trace_instr("?ST=1   n");
         saturn.CARRY = (get_program_stat(op3) != 0) ? 1 : 0;
+      }
       if (saturn.CARRY) {
         saturn.PC += 3;
         op4 = read_nibbles(saturn.PC, 2);
@@ -1085,10 +1089,13 @@ static inline int decode_8_thru_f(int op1) {
     case 8:
     case 9:
       op3 = read_nibble(saturn.PC + 2);
-      if (op2 == 8)
+      if (op2 == 8) {
+        trace_instr("?P#   n");
         saturn.CARRY = (saturn.P != op3) ? 1 : 0;
-      else
+      } else {
+        trace_instr("?P=    n");
         saturn.CARRY = (saturn.P == op3) ? 1 : 0;
+      }
       if (saturn.CARRY) {
         saturn.PC += 3;
         op4 = read_nibbles(saturn.PC, 2);
@@ -2129,19 +2136,20 @@ inline int step_instruction(void) {
   case 1:
     stop = decode_group_1();
     break;
-  case 2:
+  case 2: trace_instr("P=     n");
     op2 = read_nibble(saturn.PC + 1);
     saturn.PC += 2;
     saturn.P = op2;
     break;
-  case 3:
+  case 3: trace_instr("LCHEX  h..h");
     op2 = read_nibble(saturn.PC + 1);
     load_constant(saturn.C, op2 + 1, saturn.PC + 2);
     saturn.PC += 3 + op2;
     break;
-  case 4:
+  case 4: trace_instr("GOC    label");
     op2 = read_nibbles(saturn.PC + 1, 2);
     if (op2 == 0x02) {
+      trace_instr("NOP3");
       saturn.PC += 3;
     } else if (saturn.CARRY != 0) {
       if (op2) {
@@ -2150,13 +2158,15 @@ inline int step_instruction(void) {
         jumpaddr = (saturn.PC + op2 + 1) & 0xfffff;
         saturn.PC = jumpaddr;
       } else {
+        trace_instr("RTNC");
         saturn.PC = pop_return_addr();
       }
     } else {
+      trace_instr("RTNC");
       saturn.PC += 3;
     }
     break;
-  case 5:
+  case 5: trace_instr("GONC   label");
     if (saturn.CARRY == 0) {
       op2 = read_nibbles(saturn.PC + 1, 2);
       if (op2) {
@@ -2189,7 +2199,7 @@ inline int step_instruction(void) {
       saturn.PC = jumpaddr;
     }
     break;
-  case 7:
+  case 7: trace_instr("GOSUB  label");
     op2 = read_nibbles(saturn.PC + 1, 3);
     if (op2 & 0x800)
       op2 |= jumpmasks[3];
@@ -2445,8 +2455,10 @@ int emulate(void) {
     memset(current_instr, '\0', sizeof(current_instr));
     printf("%x\t", saturn.PC);
     step_instruction();
-    printf("%s : %s ", current_opcode, current_instr);
+    printf("%16s : %s ", current_opcode, current_instr);
     printf("\n");
+
+    if (saturn.shutdown) do_shutdown();
 
     {
       int i;

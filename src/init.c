@@ -954,6 +954,7 @@ int read_mem_file(char *name, word_4 *mem, int size) {
     if (!quiet)
       fprintf(stderr, "%s: can\'t open %s\n", progname, name);
     return 0;
+    return 0;
   }
 
   if (stat(name, &st) < 0) {
@@ -1222,6 +1223,7 @@ int read_files(void) {
     exit(1);
   }
 
+#if 0
   strcpy(fnam, path);
   strcat(fnam, "ram");
   if ((fp = fopen(fnam, "r")) == NULL) {
@@ -1231,14 +1233,14 @@ int read_files(void) {
   }
   if (!read_mem_file(fnam, saturn.ram, ram_size))
     return 0;
-
+#endif
   saturn.card_status = 0;
 
   port1_size = 0;
   port1_mask = 0;
   port1_is_ram = 0;
   saturn.port1 = (unsigned char *)0;
-
+#if 0
   strcpy(fnam, path);
   strcat(fnam, "port1");
   if (stat(fnam, &st) >= 0) {
@@ -1265,12 +1267,12 @@ int read_files(void) {
     saturn.card_status |= (port1_size > 0) ? 1 : 0;
     saturn.card_status |= port1_is_ram ? 4 : 0;
   }
-
+#endif
   port2_size = 0;
   port2_mask = 0;
   port2_is_ram = 0;
   saturn.port2 = (unsigned char *)0;
-
+#if 0
   strcpy(fnam, path);
   strcat(fnam, "port2");
   if (stat(fnam, &st) >= 0) {
@@ -1290,7 +1292,7 @@ int read_files(void) {
       }
     }
   }
-
+#endif
   if (opt_gx) {
     saturn.card_status |= (port2_size > 0) ? 1 : 0;
     saturn.card_status |= port2_is_ram ? 4 : 0;

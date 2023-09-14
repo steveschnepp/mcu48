@@ -99,6 +99,16 @@ int got_alarm;
 int conf_bank1 = 0x00000;
 int conf_bank2 = 0x00000;
 
+void yield() {
+
+#if 0
+  pause();
+#else
+  printf("."); fflush(stdout);
+  usleep(100 * 1000);
+#endif
+}
+
 void do_in(void) {
   int i, in, out;
 
@@ -394,6 +404,8 @@ void do_shutdown(void) {
   int wake, alarms;
   t1_t2_ticks ticks;
 
+  saturn.shutdown = 0;
+
   if (device.display_touched) {
     device.display_touched = 0;
     update_display();
@@ -429,8 +441,7 @@ void do_shutdown(void) {
   alarms = 0;
 
   do {
-
-    pause();
+    yield();
 
     if (got_alarm) {
       got_alarm = 0;

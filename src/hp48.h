@@ -245,6 +245,7 @@ typedef struct saturn_t {
   unsigned char *port1;
   unsigned char *port2;
 
+  int shutdown;
 } saturn_t;
 
 #define NIBBLES_PER_ROW 0x22
