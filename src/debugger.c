@@ -382,7 +382,6 @@ static int decode_64(word_64 *addr, char *arg) {
     printf("Command requires an argument.\n");
     return 0;
   }
-#ifdef SIMPLE_64
   *addr = 0;
   for (i = 0; i < strlen(arg); i++) {
     *addr <<= 4;
@@ -396,23 +395,6 @@ static int decode_64(word_64 *addr, char *arg) {
       return 0;
     }
   }
-#else
-  addr->lo = addr->hi = 0;
-  for (i = 0; i < strlen(arg); i++) {
-    addr->hi <<= 4;
-    addr->hi |= ((addr->lo >> 28) & 0x0f);
-    addr->lo <<= 4;
-    if ('0' <= arg[i] && arg[i] <= '9') {
-      addr->lo |= ((int)arg[i] - (int)'0');
-    } else if ('A' <= arg[i] && arg[i] <= 'F') {
-      addr->lo |= ((int)arg[i] - (int)'A' + 10);
-    } else {
-      addr->hi = addr->lo = 0;
-      printf("Not a number: %s.\n", arg);
-      return 0;
-    }
-  }
-#endif
   return 1;
 }
 
@@ -646,12 +628,7 @@ static void set_reg(word_64 val, int n, unsigned char *r) {
   int i;
 
   for (i = 0; i < n; i++) {
-#ifdef SIMPLE_64
     r[i] = (unsigned char)((val & (0xf << (4 * i))) >> (4 * i));
-#else
-    r[i] = (unsigned char)(((i < 8 ? val.lo : val.hi) & (0xf << (4 * i))) >>
-                           (4 * i));
-#endif
   }
 }
 
@@ -669,11 +646,7 @@ static void set_st(word_64 val) {
   int i;
 
   for (i = 0; i < 16; i++)
-#ifdef SIMPLE_64
     saturn.PSTAT[i] = (val & (1 << i)) ? 1 : 0;
-#else
-    saturn.PSTAT[i] = (val.lo & (1 << i)) ? 1 : 0;
-#endif
 }
 
 static void dump_st(void) {
@@ -705,7 +678,6 @@ static void set_hst(word_64 val) {
   saturn.SB = 0;
   saturn.SR = 0;
   saturn.MP = 0;
-#ifdef SIMPLE_64
   if (val & 1)
     saturn.XM = 1;
   if (val & 2)
@@ -714,16 +686,6 @@ static void set_hst(word_64 val) {
     saturn.SR = 1;
   if (val & 8)
     saturn.MP = 1;
-#else
-  if (val.lo & 1)
-    saturn.XM = 1;
-  if (val.lo & 2)
-    saturn.SB = 1;
-  if (val.lo & 4)
-    saturn.SR = 1;
-  if (val.lo & 8)
-    saturn.MP = 1;
-#endif
 }
 
 static void dump_hst(void) {
@@ -877,40 +839,24 @@ static void do_regs(int argc, char **argv) {
         set_reg(val, 16, saturn.D);
         dump_reg("     D", 16, saturn.D);
       } else if (!strcmp("D0", argv[1])) {
-#ifdef SIMPLE_64
         saturn.D0 = (word_20)(val & 0xfffff);
-#else
-        saturn.D0 = (word_20)(val.lo & 0xfffff);
-#endif
         printf("    D0:\t%.5lX ->", saturn.D0);
         for (i = 0; i < 20; i += 5) {
           printf(" %s", str_nibbles(saturn.D0 + i, 5));
         }
         printf("\n");
       } else if (!strcmp("D1", argv[1])) {
-#ifdef SIMPLE_64
         saturn.D1 = (word_20)(val & 0xfffff);
-#else
-        saturn.D1 = (word_20)(val.lo & 0xfffff);
-#endif
         printf("    D1:\t%.5lX ->", saturn.D1);
         for (i = 0; i < 20; i += 5) {
           printf(" %s", str_nibbles(saturn.D1 + i, 5));
         }
         printf("\n");
       } else if (!strcmp("P", argv[1])) {
-#ifdef SIMPLE_64
         saturn.P = (word_4)(val & 0xf);
-#else
-        saturn.P = (word_4)(val.lo & 0xf);
-#endif
         printf("     P:\t%.1X\n", saturn.P);
       } else if (!strcmp("PC", argv[1])) {
-#ifdef SIMPLE_64
         saturn.PC = (word_20)(val & 0xfffff);
-#else
-        saturn.PC = (word_20)(val.lo & 0xfffff);
-#endif
         disassemble(saturn.PC, instr);
         printf("    PC:\t%.5lX -> %s\n", saturn.PC, instr);
       } else if (!strcmp("R0", argv[1])) {
@@ -935,18 +881,10 @@ static void do_regs(int argc, char **argv) {
         set_reg(val, 3, saturn.OUT);
         dump_reg("   OUT", 3, saturn.OUT);
       } else if (!strcmp("CARRY", argv[1])) {
-#ifdef SIMPLE_64
         saturn.CARRY = (word_1)(val & 0x1);
-#else
-        saturn.CARRY = (word_1)(val.lo & 0x1);
-#endif
         printf(" CARRY:\t%.1d\n", saturn.CARRY);
       } else if (!strcmp("CY", argv[1])) {
-#ifdef SIMPLE_64
         saturn.CARRY = (word_1)(val & 0x1);
-#else
-        saturn.CARRY = (word_1)(val.lo & 0x1);
-#endif
         printf(" CARRY:\t%.1d\n", saturn.CARRY);
       } else if (!strcmp("ST", argv[1])) {
         set_st(val);
