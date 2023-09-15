@@ -1085,128 +1085,6 @@ int read_files(void) {
 
   rom_is_new = 0;
 
-#if 0 // no state
-
-  strcpy(fnam, path);
-  strcat(fnam, "hp48");
-  if (NULL == (fp = fopen(fnam, "r"))) {
-    if (!quiet)
-      fprintf(stderr, "%s: can\'t open %s\n", progname, fnam);
-    return 0;
-  }
-
-  /*
-   * ok, file is open, try to read the MAGIC number
-   */
-  read_u_long(fp, &saturn.magic);
-
-  if (X48_MAGIC != saturn.magic) {
-    /*
-     * no MAGIC number, try to read old format file
-     */
-    fseek(fp, 0, SEEK_SET);
-    if (fread((char *)&old_saturn, 1, sizeof(old_saturn), fp) ==
-        sizeof(old_saturn)) {
-      /*
-       * seems to work
-       */
-      copy_old_saturn(&old_saturn, &saturn);
-      if (!quiet)
-        fprintf(stderr, "%s: %s seems to be an old version file\n", progname,
-                fnam);
-      saturn.magic = X48_MAGIC;
-      saturn.t1_tick = 8192;
-      saturn.t2_tick = 16;
-      saturn.i_per_s = 0;
-      saturn.version[0] = VERSION_MAJOR;
-      saturn.version[1] = VERSION_MINOR;
-      saturn.version[2] = PATCHLEVEL;up
-
-      saturn.version[3] = COMPILE_VERSION;
-    } else {
-      /*
-       * no, initialize
-       */
-      if (!quiet)
-        fprintf(stderr, "%s: can\'t handle %s\n", progname, fnam);
-      init_saturn();
-    }
-  } else {
-    /*
-     * MAGIC ok, read and compare the version
-     */
-    read_version = 1;
-    for (i = 0; i < 4; i++) {
-      if (!read_char(fp, &saturn.version[i])) {
-        if (!quiet)
-          fprintf(stderr, "%s: can\'t read version\n", progname);
-        read_version = 0;
-      }
-    }
-
-    if (read_version) {
-      v1 = ((int)saturn.version[0] & 0xff) << 24;
-      v1 |= ((int)saturn.version[1] & 0xff) << 16;
-      v1 |= ((int)saturn.version[2] & 0xff) << 8;
-      v1 |= ((int)saturn.version[3] & 0xff);
-      v2 = ((int)VERSION_MAJOR & 0xff) << 24;
-      v2 |= ((int)VERSION_MINOR & 0xff) << 16;
-      v2 |= ((int)PATCHLEVEL & 0xff) << 8;
-      v2 |= ((int)COMPILE_VERSION & 0xff);
-
-      if ((v1 & 0xffffff00) < (v2 & 0xffffff00)) {
-        if (!quiet)
-          fprintf(stderr, "%s: %s is a version %d.%d.%d file, converting\n",
-                  progname, fnam, saturn.version[0], saturn.version[1],
-                  saturn.version[2]);
-      } else if ((v2 & 0xffffff00) < (v1 & 0xffffff00)) {
-        if (!quiet)
-          fprintf(stderr, "%s: %s is a version %d.%d.%d file, trying ...\n",
-                  progname, fnam, saturn.version[0], saturn.version[1],
-                  saturn.version[2]);
-      }
-
-      if (v1 < 0x00040000) {
-        /*
-         * read version < 0.4 file
-         */
-        if (!read_version_0_3_0_file(fp)) {
-          if (!quiet)
-            fprintf(stderr, "%s: can\'t handle %s\n", progname, fnam);
-          init_saturn();
-        } else {
-          copy_0_3_0_saturn(&saturn_0_3_0, &saturn);
-          if (verbose)
-            printf("%s: read %s\n", progname, fnam);
-        }
-      } else if (v1 <= v2) {
-        /*
-         * read latest version file
-         */
-        if (!read_version_0_4_0_file(fp)) {
-          if (!quiet)
-            fprintf(stderr, "%s: can\'t handle %s\n", progname, fnam);
-          init_saturn();
-        } else if (verbose) {
-          printf("%s: read %s\n", progname, fnam);
-        }
-      } else {
-        /*
-         * try to read latest version file
-         */
-        if (!read_version_0_4_0_file(fp)) {
-          if (!quiet)
-            fprintf(stderr, "%s: can\'t handle %s\n", progname, fnam);
-          init_saturn();
-        } else if (verbose) {
-          printf("%s: read %s\n", progname, fnam);
-        }
-      }
-    }
-  }
-  fclose(fp);
-#endif
-
   dev_memory_init();
 
   saturn_config_init();
@@ -1223,76 +1101,18 @@ int read_files(void) {
     exit(1);
   }
 
-#if 0
-  strcpy(fnam, path);
-  strcat(fnam, "ram");
-  if ((fp = fopen(fnam, "r")) == NULL) {
-    if (!quiet)
-      fprintf(stderr, "%s: can\'t open %s\n", progname, fnam);
-    return 0;
-  }
-  if (!read_mem_file(fnam, saturn.ram, ram_size))
-    return 0;
-#endif
   saturn.card_status = 0;
 
   port1_size = 0;
   port1_mask = 0;
   port1_is_ram = 0;
   saturn.port1 = (unsigned char *)0;
-#if 0
-  strcpy(fnam, path);
-  strcat(fnam, "port1");
-  if (stat(fnam, &st) >= 0) {
-    port1_size = 2 * st.st_size;
-    if ((port1_size == 0x10000) || (port1_size == 0x40000)) {
-      if (NULL == (saturn.port1 = (word_4 *)malloc(port1_size))) {
-        if (!quiet)
-          fprintf(stderr, "%s: can\'t malloc PORT1[%ld]\n", progname,
-                  port1_size);
-      } else if (!read_mem_file(fnam, saturn.port1, port1_size)) {
-        port1_size = 0;
-        port1_is_ram = 0;
-      } else {
-        port1_is_ram = (st.st_mode & S_IWUSR) ? 1 : 0;
-        port1_mask = port1_size - 1;
-      }
-    }
-  }
 
-  if (opt_gx) {
-    saturn.card_status |= (port1_size > 0) ? 2 : 0;
-    saturn.card_status |= port1_is_ram ? 8 : 0;
-  } else {
-    saturn.card_status |= (port1_size > 0) ? 1 : 0;
-    saturn.card_status |= port1_is_ram ? 4 : 0;
-  }
-#endif
   port2_size = 0;
   port2_mask = 0;
   port2_is_ram = 0;
   saturn.port2 = (unsigned char *)0;
-#if 0
-  strcpy(fnam, path);
-  strcat(fnam, "port2");
-  if (stat(fnam, &st) >= 0) {
-    port2_size = 2 * st.st_size;
-    if ((opt_gx && ((port2_size % 0x40000) == 0)) ||
-        (!opt_gx && ((port2_size == 0x10000) || (port2_size == 0x40000)))) {
-      if (NULL == (saturn.port2 = (word_4 *)malloc(port2_size))) {
-        if (!quiet)
-          fprintf(stderr, "%s: can\'t malloc PORT2[%ld]\n", progname,
-                  port2_size);
-      } else if (!read_mem_file(fnam, saturn.port2, port2_size)) {
-        port2_size = 0;
-        port2_is_ram = 0;
-      } else {
-        port2_is_ram = (st.st_mode & S_IWUSR) ? 1 : 0;
-        port2_mask = port2_size - 1;
-      }
-    }
-  }
-#endif
+
   if (opt_gx) {
     saturn.card_status |= (port2_size > 0) ? 1 : 0;
     saturn.card_status |= port2_is_ram ? 4 : 0;
